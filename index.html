@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de DNA Fita Dupla - Mago dos Programas</title>
+    <style>
+        :root {
+            --bg-color: #0b0b10;
+            --card-bg: #151522;
+            --purple-primary: #8b5cf6;
+            --purple-hover: #7c3aed;
+            --purple-glow: rgba(139, 92, 246, 0.3);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-color: #2b2b40;
+            --adenina: #ef4444;
+            --timina: #3b82f6;
+            --guanina: #10b981;
+            --citosina: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px var(--purple-glow);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            color: var(--purple-primary);
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: var(--text-main);
+            font-weight: 600;
+            border-left: 4px solid var(--purple-primary);
+            padding-left: 10px;
+        }
+
+        .inputs-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        @media (min-width: 520px) {
+            .inputs-grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 0; /* Garante que o input não force expansão */
+        }
+
+        .input-group label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .badge-a { color: var(--adenina); }
+        .badge-t { color: var(--timina); }
+        .badge-g { color: var(--guanina); }
+        .badge-c { color: var(--citosina); }
+
+        .input-group input {
+            background-color: #0b0b10;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: white;
+            padding: 10px 5px;
+            font-size: 1rem;
+            text-align: center;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--purple-primary);
+            box-shadow: 0 0 8px var(--purple-glow);
+        }
+
+        .btn-calculate {
+            width: 100%;
+            background-color: var(--purple-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+            margin-bottom: 25px;
+        }
+
+        .btn-calculate:hover {
+            background-color: var(--purple-hover);
+        }
+
+        .btn-calculate:active {
+            transform: scale(0.98);
+        }
+
+        .results-container {
+            background-color: #0b0b10;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            display: none;
+        }
+
+        .results-container.active {
+            display: block;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.95rem;
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+        }
+
+        .total-highlight {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--border-color);
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .explanation {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn-preset {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-preset:hover {
+            border-color: var(--purple-primary);
+            color: var(--text-main);
+        }
+
+        .app-footer {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--purple-primary);
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px var(--purple-glow);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Calculadora de DNA (Fita Dupla)</h1>
+            <p>Insira os valores da fita simples para calcular a composição da fita dupla via Regras de Chargaff.</p>
+        </header>
+
+        <div class="preset-buttons">
+            <span style="font-size: 0.85rem; color: var(--text-muted); align-self: center;">Exemplo rápido:</span>
+            <button class="btn-preset" onclick="loadPreset(20, 25, 30, 25)">Questão do ENEM (20, 25, 30, 25)</button>
+            <button class="btn-preset" onclick="loadPreset(10, 15, 20, 15)">Exemplo 2 (10, 15, 20, 15)</button>
+        </div>
+
+        <div class="section-title">Fita Simples Inicial</div>
+        
+        <div class="inputs-grid">
+            <div class="input-group">
+                <label class="badge-a">● Adenina (A)</label>
+                <input type="number" id="inputA" value="20" min="0">
+            </div>
+            <div class="input-group">
+                <label class="badge-t">● Timina (T)</label>
+                <input type="number" id="inputT" value="25" min="0">
+            </div>
+            <div class="input-group">
+                <label class="badge-g">● Guanina (G)</label>
+                <input type="number" id="inputG" value="30" min="0">
+            </div>
+            <div class="input-group">
+                <label class="badge-c">● Citosina (C)</label>
+                <input type="number" id="inputC" value="25" min="0">
+            </div>
+        </div>
+
+        <button class="btn-calculate" onclick="calcularDNA()">Calcular Dupla Fita</button>
+
+        <div id="resultsContainer" class="results-container">
+            <div class="section-title" style="margin-bottom: 10px;">Resultado da Dupla Fita</div>
+            <div class="result-row">
+                <span class="badge-a">Adenina (A Total):</span>
+                <strong id="resA">0</strong>
+            </div>
+            <div class="result-row">
+                <span class="badge-t">Timina (T Total):</span>
+                <strong id="resT">0</strong>
+            </div>
+            <div class="result-row">
+                <span class="badge-g">Guanina (G Total):</span>
+                <strong id="resG">0</strong>
+            </div>
+            <div class="result-row">
+                <span class="badge-c">Citosina (C Total):</span>
+                <strong id="resC">0</strong>
+            </div>
+
+            <div class="total-highlight">
+                <span>Total de Nucleotídeos na Dupla Fita:</span>
+                <span id="resTotal" style="color: var(--purple-primary);">0</span>
+            </div>
+
+            <div class="explanation" id="explanationText"></div>
+        </div>
+
+        <div class="app-footer">
+            EU TE AMO MOZI 💜
+        </div>
+    </div>
+
+    <script>
+        function loadPreset(a, t, g, c) {
+            document.getElementById('inputA').value = a;
+            document.getElementById('inputT').value = t;
+            document.getElementById('inputG').value = g;
+            document.getElementById('inputC').value = c;
+            calcularDNA();
+        }
+
+        function calcularDNA() {
+            const a1 = parseInt(document.getElementById('inputA').value) || 0;
+            const t1 = parseInt(document.getElementById('inputT').value) || 0;
+            const g1 = parseInt(document.getElementById('inputG').value) || 0;
+            const c1 = parseInt(document.getElementById('inputC').value) || 0;
+
+            const a2 = t1;
+            const t2 = a1;
+            const g2 = c1;
+            const c2 = g1;
+
+            const totalA = a1 + a2;
+            const totalT = t1 + t2;
+            const totalG = g1 + g2;
+            const totalC = c1 + c2;
+            const totalGeral = totalA + totalT + totalG + totalC;
+
+            document.getElementById('resA').innerText = totalA;
+            document.getElementById('resT').innerText = totalT;
+            document.getElementById('resG').innerText = totalG;
+            document.getElementById('resC').innerText = totalC;
+            document.getElementById('resTotal').innerText = totalGeral;
+
+            document.getElementById('explanationText').innerHTML = 
+                `<strong>Detalhamento da Fita Complementar:</strong><br>` +
+                `• A fita 1 tem ${a1} A, ${t1} T, ${g1} G, ${c1} C.<br>` +
+                `• A fita complementar se forma invertendo os pares: gerou ${a2} A, ${t2} T, ${g2} G e ${c2} C.<br>` +
+                `• Note que na dupla fita final, <strong>A = T (${totalA})</strong> e <strong>G = C (${totalC})</strong>, validando as Leis de Chargaff!`;
+
+            document.getElementById('resultsContainer').classList.add('active');
+        }
+
+        window.onload = function() {
+            calcularDNA();
+        };
+    </script>
+</body>
+</html>
